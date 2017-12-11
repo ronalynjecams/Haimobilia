@@ -19,11 +19,6 @@
 <script src="../hai/assets/plugins/datatables/responsive.bootstrap.min.js"></script>
 <script src="../hai/assets/plugins/datatables/dataTables.scroller.min.js"></script>
 
-
-<?php
-	$UserRole = $role;
-?>
-
 <div class="content">
 	<div class="container">
 		<div class="row bg-title">
@@ -41,7 +36,7 @@
 				                <tr>
 				                	<th>Date Created</th>
 				                	<th>Company name</th>
-				                	<?php if($UserRole != "sales_executive") { ?>
+				                	<?php if($role != "sales_executive") { ?>
 				                	<th>Sales Executive</th>
 				                	<?php } ?>
 				                	<th>Contract Amount</th>
@@ -56,20 +51,33 @@
 				                	$quote_id = $quote['id'];
 				                	$quote_created = $quote['created'];
 				                	$company = $quotation['Company'];
-				                	$company_name = $company['name'];
-				                	$sales_exe = $quotation['User'];
-				                	if(!empty($sales_exe)) {
-					                	$sales_exe_name = ucwords($sales_exe['fullname']);
+				                	$company_name_tmp = $company['name'];
+				                	if($company_name_tmp != "") {
+				                		$company_name = $company_name_tmp;
 				                	}
 				                	else {
-				                		$sales_exe_name = "No sales executive.";
+				                		$company_name = "No Company.";
+				                	}
+				                	$sales_exe = $quotation['User'];
+				                	$sales_exe_name_tmp = ucwords($sales_exe['fullname']);
+				                	$sales_exe_username = ucwords($sales_exe['username']);
+				                	if($sales_exe_name_tmp != "") {
+				                		$sales_exe_name = $sales_exe_name_tmp;
+				                	}
+				                	else {
+				                		if($sales_exe_username!="") {
+				                			$sales_exe_name = $sales_exe_username;
+				                		}
+				                		else {
+					                		$sales_exe_name = "No Sales Executive.";
+				                		}
 				                	}
 				                	$contract_amnt = "₱ ".number_format((float)$quote['grand_total'],2,'.',',');
 				                	?>
 				                	<tr>
 				                		<td><?php echo $quote_created; ?></td>
 				                		<td><?php echo $company_name; ?></td>
-				                		<?php if($UserRole != "sales_executive") {
+				                		<?php if($role != "sales_executive") {
 				                			echo '<td>'.$sales_exe_name.'</td>';
 				                		} ?>
 				                		<td><?php echo $contract_amnt; ?></td>

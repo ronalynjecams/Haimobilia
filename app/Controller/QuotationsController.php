@@ -294,9 +294,17 @@ class QuotationsController extends AppController {
     public function all_list() {
         $status = $this->params['url']['status'];
         $role = $this->Auth->user('role');
+        $user_id = $this->Auth->user('id');
         
-        $quotations = $this->Quotation->find('all', ['conditions'=>
-            ['status'=>$status]]);
+        if($role!="sales_executive") {
+            $quotations = $this->Quotation->find('all', ['conditions'=>
+                ['status'=>$status]]);
+        }
+        else {
+            $quotations = $this->Quotation->find('all', ['conditions'=>
+                ['status'=>$status,
+                 'user_id'=>$user_id]]);
+        }
         
         $this->set(compact('status','quotations', 'role'));
     }
