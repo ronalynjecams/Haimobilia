@@ -1,0 +1,6 @@
+[submodule "app/Console/Templates/pretty_cake"]
+	path = app/Console/Templates/pretty_cake
+	url = https://github.com/nelson6e65/pretty_cake.git
+[submodule "app/Console/Templates/bootstrap"]
+	path = app/Console/Templates/bootstrap
+	url = https://github.com/nelson6e65/pretty_cake.git

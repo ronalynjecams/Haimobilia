@@ -1,0 +1,14 @@
+/*
+.topbar_hailogo {
+   content:url("../hai/haimobilia_logo.JPG"); 
+    width: 75%;
+    margin: auto;
+    height: auto;
+}​*/
+.topbar_hailogo { 
+    width: 75%;
+    margin: 50px;
+    height: auto; 
+    /*padding:50px;*/
+    /*z-index: 9999;*/
+}​
