@@ -105,7 +105,7 @@ $(document).ready(function() {
 								dataType: 'text',
 								success: function(id) {
 									console.log(id);
-									// location.reload();
+									location.reload();
 								},
 								error: function(error) {
 									console.log("Error in delivery_receipts: "+error);

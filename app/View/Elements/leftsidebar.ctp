@@ -30,6 +30,14 @@
                                     <li><a href="/quotations/all_list?status=processed">Processed</a></li> 
                                 </ul>
                             </li>
+                            
+                            <li class="has_sub">
+                                <a href="javascript:void(0);" class="waves-effect"><i class="fa fa-object-group"></i> <span> Collection </span> <span class="menu-arrow"></span> </a>
+                                <ul class="list-unstyled">
+                                    <li><a href="/collection/all_list?status=pending">Pending</a></li>
+                                    <li><a href="/collection/all_list?status=accomplished">Accomplished</a></li> 
+                                </ul>
+                            </li>
 
                             <li class="has_sub">
                                 <a href="javascript:void(0);" class="waves-effect"><i class="fa-file-powerpoint-o"></i> <span> Products </span> <span class="menu-arrow"></span> </a>

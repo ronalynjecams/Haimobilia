@@ -91,13 +91,17 @@ class DeliveryReceiptsController extends AppController {
 	public function add() {
 		$this->loadModel('Quotation');
 		$this->loadModel('DeliveryReceipt');
-		$delivery_receipts = $this->DeliveryReceipt->find('all',
-			['conditions'=>['fields'=>['DeliveryReceipt.quotation_id']]]);
+		$this->DeliveryReceipt->recursive = -1;
+		$delivery_receipts = $this->DeliveryReceipt->find('all', ['fields'=>['quotation_id']]);
+		
+		$quotation_ids = [];
+		foreach($delivery_receipts as $delivery_receipt) {
+			$del_rec = $delivery_receipt['DeliveryReceipt'];
+			$quotation_ids[] = $del_rec['quotation_id'];
+		}
 			
-		$quotations = $this->Quotation->find('all');
-		
-		
-		echo json_encode($delivery_receipts);
+		$quotations = $this->Quotation->find('all', ['conditions'=>
+			['NOT'=>['Quotation.id'=>$quotation_ids]]]);
 		$this->set(compact('quotations'));
 	}
 	
@@ -139,5 +143,23 @@ class DeliveryReceiptsController extends AppController {
 		
 		return json_encode($dr_number);
 		exit;
+	}
+	
+	public function all_list() {
+		$this->loadModel('Quotation');
+		
+		$status = $this->params['url']['status'];
+		$drs = $this->DeliveryReceipt->find('all',
+			['conditions'=>['DeliveryReceipt.status'=>$status]]);
+		
+		$companies = [];
+		foreach($drs as $dr_obj) {
+			$dr = $dr_obj['DeliveryReceipt'];
+			$dr_quotation_id = $dr['quotation_id'];
+			
+			$companies[$dr_quotation_id] = $this->Quotation->findById($dr_quotation_id);
+		}	
+		
+		$this->set(compact('status', 'drs', 'companies'));
 	}
 }
