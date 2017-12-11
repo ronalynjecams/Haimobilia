@@ -90,8 +90,14 @@ class DeliveryReceiptsController extends AppController {
 	
 	public function add() {
 		$this->loadModel('Quotation');
+		$this->loadModel('DeliveryReceipt');
+		$delivery_receipts = $this->DeliveryReceipt->find('all',
+			['conditions'=>['fields'=>['DeliveryReceipt.quotation_id']]]);
+			
 		$quotations = $this->Quotation->find('all');
 		
+		
+		echo json_encode($delivery_receipts);
 		$this->set(compact('quotations'));
 	}
 	
