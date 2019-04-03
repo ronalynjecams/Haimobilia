@@ -92,7 +92,9 @@ class DeliveryReceiptsController extends AppController {
 		$this->loadModel('Quotation');
 		$this->loadModel('DeliveryReceipt');
 		$this->DeliveryReceipt->recursive = -1;
-		$delivery_receipts = $this->DeliveryReceipt->find('all', ['fields'=>['quotation_id']]);
+		$delivery_receipts = $this->DeliveryReceipt->find('all',
+			['conditions'=>['DeliveryReceipt.status'=>'delivered'],
+			'fields'=>['quotation_id']]);
 		
 		$quotation_ids = [];
 		foreach($delivery_receipts as $delivery_receipt) {
@@ -162,4 +164,57 @@ class DeliveryReceiptsController extends AppController {
 		
 		$this->set(compact('status', 'drs', 'companies'));
 	}
+	
+	public function action() {
+        $this->autoRender = false;
+        $id = $this->request->data['id'];
+        $action = $this->request->data['action'];
+        
+        $DS_DeliveryReceipt= $this->DeliveryReceipt->getDataSource();
+        $this->DeliveryReceipt->id = $id;
+        $this->DeliveryReceipt->set(['status'=>$action]);
+        if($this->DeliveryReceipt->save()) {
+            $DS_DeliveryReceipt->commit();
+        }
+        else {
+            $DS_DeliveryReceipt->rollback();
+        }
+        
+        return json_encode($quote_id);
+        exit;
+    }
+        public function update_booking_process(){
+        
+        $this->autoRender = false;
+        $this->response->type('json');
+        $dd = $this->request->data;
+        $id = $dd['dr_id'];
+        $booking_code = $dd['ubooking_code']; 
+        $amouont = $dd['uamount']; 
+        $dr_type = $dd['utype']; 
+         
+        $this->DeliveryReceipt->id = $id;
+        $this->DeliveryReceipt->set(array(
+            'booking_code'=>$booking_code,
+            'amount'=>$amouont,
+            'dr_type'=>$dr_type,
+            ));
+        if($this->DeliveryReceipt->save()) { 
+            return json_encode($id);
+        } 
+        exit;
+    }
+
+
+    public function get_info() {
+        $this->autoRender = false;
+        $this->response->type('json');
+        if ($this->request->is('ajax')) {
+            $id = $this->request->query['id'];
+            $this->DeliveryReceipt->recursive = -1;
+            $lead = $this->DeliveryReceipt->findById($id);
+            return (json_encode($lead['DeliveryReceipt']));
+            exit;
+        }
+    }
 }

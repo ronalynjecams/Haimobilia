@@ -246,4 +246,55 @@ class ProductsController extends AppController {
             }
         }
     }
+    
+    public function all_list(){
+       $products = $this->Product->find('all');
+        $this->set(compact('products'));
+    }
+    
+    public function update(){
+        
+        $id = $this->params['url']['id']; 
+        $prod_data = $this->Product->findById($id);
+        $this->set(compact('prod_data'));
+    }
+    
+    public function update_info(){
+        
+        $this->autoRender = false;
+        $quote_id = $this->request->data['id'];
+        
+        
+								// 	var data = {'name': name.val(),
+								// 			   'description': tinymce.get('input_description').getContent(),
+								// 			   //'image': image_filename,
+								// 			   'price': price.val(),
+								// 			   'sale_price': sale_price.val(),
+								// 			   'prod_id' : prod_id.val() 
+								// 	};
+									
+        $name = $this->request->data['name'];
+        $description = $this->request->data['description'];
+        $price = $this->request->data['price'];
+        $sale_price = $this->request->data['sale_price'];
+        $prod_id = $this->request->data['prod_id'];
+        
+        $DS_Quotation = $this->Product->getDataSource();
+        $this->Product->id = $prod_id;
+        $this->Product->set([
+            'name'=>$name,
+            'description'=>$description,
+            'price'=>$price,
+            'sale_price'=>$sale_price,
+            ]);
+        if($this->Product->save()) {
+            $DS_Quotation->commit();
+        }
+        else {
+            $DS_Quotation->rollback();
+        }
+        
+        return json_encode($quote_id);
+        exit;
+    }
 }

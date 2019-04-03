@@ -26,21 +26,6 @@ class CollectionsController extends AppController {
 	}
 
 /**
- * view method
- *
- * @throws NotFoundException
- * @param string $id
- * @return void
- */
-	public function view($id = null) {
-		if (!$this->Collection->exists($id)) {
-			throw new NotFoundException(__('Invalid collection'));
-		}
-		$options = array('conditions' => array('Collection.' . $this->Collection->primaryKey => $id));
-		$this->set('collection', $this->Collection->find('first', $options));
-	}
-
-/**
  * add method
  *
  * @return void
@@ -107,44 +92,193 @@ class CollectionsController extends AppController {
 		}
 		return $this->redirect(array('action' => 'index'));
 	}
-
+	
 	public function all_list() {
-		// $this->loadModel('Quotation');
-		// $status = $this->params['url']['status'];
-		// if($status == "pending") {
-		// 	$collections = $this->Quotation->find('all',
-		// 		['conditions'=>['NOT'=>['Quotation.collection_date'=>null]]]);
-		// }
-		// else {
-		// 	$collections = $this->Quotation->find('all',
-		// 		['conditions'=>['Quotation.collection_date'=>null]]);
-		// }
+		$this->loadModel('Quotation');
+		$this->loadModel('Company');
 		
-		// $this->set(compact('status', 'collections'));
+		$status = $this->params['url']['status'];
+		$undefined = "";
 		
+		$quotations = $this->Quotation->Collection->find('all',
+		['conditions'=>['Collection.status'=>'verified'],
+		 'fields' => ['DISTINCT Quotation.id', 'Quotation.grand_total']
+		]);
 		
-	// 	$status = $this->params['url']['status'];
-		
-	// 	$collections = $this->Collection->find('all');
-
-	// 	$quotes = [];
-	// 	$undefined = '';
-	// 	foreach($collections as $collection_obj) {
-	// 		$collection = $collection_obj['Collection'];
-	// 		$col_quote_id = $collection['quotation_id'];
+		$col_pending = [];
+		$col_accom = [];
+		foreach($quotations as $quote_obj) {
+			$quote = $quote_obj['Quotation'];
+			$quote_grand_total = $quote['grand_total'];
+			$quote_id = $quote['id'];
 			
-	// 		if($status=="pending") {
-	// 			$quotes[$col_quote_id] = $this->Quotation->find('all',
-	// 				['conditions'=>['collection_date']]);
-	// 		}
-	// 		else if($status=="accomplished") {
-				
-	// 		}
-	// 		else {
-	// 			$undefined = "Undefined Status";
-	// 		}
-	// 	}
+			$get_collections = $this->Collection->find('all',
+				['conditions'=>['Collection.quotation_id'=>$quote_id],
+								'fields'=>
+								['Collection.id',
+								 'Collection.paid_amount']]);
+			$col_paid_amount = 0.000000;
+			foreach($get_collections as $ret_col) {
+				$col = $ret_col['Collection'];
+				$col_id = $col['id'];
+				$col_paid_amount += $col['paid_amount'];
+
+				if($quote_grand_total!=$col_paid_amount) {
+					$col_pending[] = $col_id;
+				}
+				else {
+					$col_accom[] = $col_id;
+				}
+			}
+		}
 		
-	// 	$this->set(compact('status', 'collections', 'undefined'));
+		if($status == "pending") {
+			$cols = $this->Collection->find('all', ['conditions'=>
+				['Collection.id'=>$col_pending]]);
+		}
+		elseif($status == "accomplished") {
+			$cols = $this->Collection->find('all', ['conditions'=>
+				['Collection.id'=>$col_accom]]);
+		}
+		else {
+			$undefined = "Invalid Status.";
+		}
+		
+		$clients = [];
+		foreach($cols as $col_obj) {
+			$quote_ent = $col_obj['Quotation'];
+			$quote_id = $quote_ent['id'];
+			$cli_id = $quote_ent['company_id'];
+			
+			$this->Company->recursive = -1;
+			$clients[$quote_id] = $this->Company->findById($cli_id,
+				'Company.name');
+		}
+		
+		$this->set(compact('status', 'undefined', 'cols', 'clients'));
 	}
+	
+	public function view() {
+		$quote_id = $this->params['url']['id'];
+		
+		$this->loadModel('Quotation');
+		$this->loadModel('QuotationProduct');
+		$this->loadModel('DeliveryReceipt');
+		
+		$quotes_obj = $this->Quotation->findById($quote_id);
+		$quote_prods = $this->QuotationProduct->find('all',
+			['conditions'=>['quotation_id'=>$quote_id]]);
+		$drs_obj = $this->DeliveryReceipt->findById($quote_id);
+		
+		$this->set(compact('quotes_obj', 'drs_obj', 'quote_prods'));
+		
+	}
+	
+	public function update(){
+		$id = $this->params['url']['id'];
+		$this->loadModel('Quotation');
+		$this->loadModel('Bank');
+		
+		
+		$quote_data = $this->Quotation->findById($id); 
+		
+		
+		$collection_data = $this->Collection->findAllByQuotationId($id); 
+		
+		$banks = $this->Bank->find('all');
+		
+		
+		
+		
+		$this->set(compact('quote_data', 'collection_data', 'banks'));
+		 
+	}
+	
+	public function processpayment(){
+		
+		$data = $this->request->data;
+		$this->autoRender = false;
+		
+		$paid_amount = $data['paid_amount'];
+        $ewt_amount = $data['ewt_amount'];
+        $other_amount = $data['other_amount'];
+        $cheque_date = $data['cheque_date'];
+        $cheque_number = $data['cheque_number'];  
+        $bank_id = $data['bank_id']; 
+        $type = $data['type'];
+        $quotation_id = $data['quotation_id'];
+        
+        $this->Collection->recursive = 0;
+        $check_payment = $this->Collection->findAllByQuotationId($quotation_id);
+        $date = date('Y-m-d h:m:i');
+        
+        if(count($check_payment) == 0){
+        	$status = 'newest';
+        } else{
+        	$status = 'unverified';
+        }
+        
+        if($type == 'cash'){
+        	$this->Collection->create();
+        	$this->Collection->set(array('quotation_id' => $quotation_id, 'type' => $type, 'paid_amount' => $paid_amount, 'ewt_amount', $ewt_amount, 'other_amount' => $other_amount, 'status' => $status, 'created' => $date, 'modified' => $date));
+        }
+        
+        if($type == 'cheque'){
+        	$this->Collection->create();
+        	$this->Collection->set(array('quotation_id' => $quotation_id, 'type' => $type, 'paid_amount' => $paid_amount, 'cheque_date', $cheque_date, 'cheque_number' => $cheque_number, 'bank_id' => $bank_id, 'status' => $status, 'created' => $date, 'modified' => $date));
+        }
+        if($type == 'online'){
+        	$this->Collection->create();
+        	$this->Collection->set(array('quotation_id' => $quotation_id, 'type' => $type, 'paid_amount' => $paid_amount, 'ewt_amount', $ewt_amount, 'other_amount' => $other_amount, 'bank_id' => $bank_id, 'status' => $status, 'created' => $date, 'modified' => $date));
+        }
+        
+        if ($this->Collection->save()){
+            if($this->Auth->user('role') == 'sales_executive'){
+                $quotation_status = 'moved';
+            }else{
+                $quotation_status = 'processed';
+            }
+            
+        	if($status == 'newest'){
+        		$this->loadModel('Quotation');
+        		$this->Quotation->id=$quotation_id;
+        		$this->Quotation->set(array(
+        			'status'=>$quotation_status));
+        		if($this->Quotation->save()){
+    				return 'success';
+        		}else{
+        			return 'error';
+        		}
+
+        	}else{                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+    			return 'success';
+        	}
+    	} else{
+    		return 'error';	
+    	}
+	}
+	
+	public function action() {
+        $this->autoRender = false;
+        $col_id = $this->request->data['id'];
+        $action = $this->request->data['action'];
+        
+        $DS_Collection = $this->Collection->getDataSource();
+        $this->Collection->id = $col_id;
+        $this->Collection->set(['status'=>$action]);
+        if($this->Collection->save()) {
+        		$this->loadModel('Quotation');
+        		$this->Quotation->id=$quotation_id;
+        		$this->Quotation->set(array(
+        			'status'=>$quotation_status));
+        		if($this->Quotation->save()){
+            $DS_Collection->commit();
+        }
+        else {
+            $DS_Collection->rollback();
+        }
+        
+        return json_encode($quote_id);
+        exit;
+    }
 }

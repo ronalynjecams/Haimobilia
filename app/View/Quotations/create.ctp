@@ -1,3 +1,7 @@
+<!--IMPORT SELECT 2-->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+
 
 <script src="//cdn.tinymce.com/4/tinymce.min.js"></script> 
 <div class="content">
@@ -8,7 +12,7 @@
         <div class="row">
             <div class="col-sm-12">
                 <div class="btn-group pull-right m-t-5 m-b-20"> 
-                    <a href="#" data-quotationid="<?php echo $quote_data['Quotation']['id']; ?>"  data-processtype="save" class="btn btn-info waves-effect waves-light">Save</a>
+                    <a href="#" data-quotationid="<?php echo $quote_data['Quotation']['id']; ?>"  data-processtype="save" class="btn btn-info waves-effect waves-light savePendingQuote">Save</a>
                     <a href="#" data-quotationid="<?php echo $quote_data['Quotation']['id']; ?>"  data-processtype="cancelled"  class="btn btn-custom waves-effect waves-light">Cancel</a>
                 </div>
                 <h4 class="page-title">Create Quotation <small>[<b> <?php if (!is_null($quote_data['Quotation']['quote_number'])) echo $quote_data['Quotation']['quote_number']; ?> </b>]</h4>
@@ -24,7 +28,7 @@
                             <div class="form-group">
                                 <label class="col-md-2 control-label">Subject</label>
                                 <div class="col-md-10">
-                                    <input type="text" class="form-control help-block" id="subject" value="<?php if (!is_null($quote_data['Quotation']['subject'])) echo $quote_data['Quotation']['subject']; ?>" onkeyup="saveSubject()">
+                                    <input type="text" class="form-control help-block" id="subject" value="<?php if (!is_null($quote_data['Quotation']['subject'])) echo $quote_data['Quotation']['subject']; ?>" >
                                  <!--<span class="help-block"><small>&nbsp;</small></span>-->
                                 </div>
                             </div>
@@ -112,7 +116,7 @@
                                     <table class="table">
                                         <tr>
                                             <th>#</th>
-                                            <th>Image</th>
+                                            <!--<th>Image</th>-->
                                             <th>Product Name</th>
                                             <th>Product Description</th>
                                             <th>Quantity</th>
@@ -120,18 +124,67 @@
                                             <th>Total</th>
                                             <th>Action</th>
                                         </tr>
-                                        <?php foreach ($quote_prods as $quote_prod) { ?>
+                                        <?php 
+                                        $ctr = 1;
+                                        // pr($quote_prods);
+                                        foreach ($quote_prods as $quote_prod) { ?>
                                             <tr>
-                                                <td>#</td>
-                                                <td>Image</td>
-                                                <td>Product Name</td>
-                                                <td>Product Description</td>
-                                                <td>Quantity</td>
-                                                <td>List Price</td>
-                                                <td>Total</td>
-                                                <td>Action</td>
+                                                <td><?php echo $ctr; ?></td> 
+                                                <td><?php echo  $quote_prod['Product']['name']; ?></td>
+                                                <td>  <?php echo  $quote_prod['QuotationProduct']['description']; ?><?php if($quote_data['Quotation']['status'] == 'pending' || $quote_data['Quotation']['status'] == 'ongoing'){?> <button class="btn btn-default btn-xs update_desc" data-descid="<?php echo $quote_prod['QuotationProduct']['id']; ?>" data-descdata="<?php echo $quote_prod['QuotationProduct']['description']; ?>"><i class="fa fa-edit"></i></button> <?php } ?></td>
+                                                <td>
+                                                    <input type="number" class="form-control quoted_qty" <?php if($quote_data['Quotation']['status'] != 'pending' && $quote_data['Quotation']['status'] != 'ongoing'){echo 'disabled';} ?> data-qtyid="<?php echo $quote_prod['QuotationProduct']['id']; ?>" value="<?php echo $quote_prod['QuotationProduct']['qty']; ?>">
+                                                </td>
+                                                <td>
+                                                    <input type="number" class="form-control quoted_list_price" <?php if($quote_data['Quotation']['status'] != 'pending' && $quote_data['Quotation']['status'] != 'ongoing'){echo 'disabled';} ?> data-listpriceid="<?php echo $quote_prod['QuotationProduct']['id']; ?>" value="<?php echo $quote_prod['QuotationProduct']['list_price']; ?>"  min="1" step="1">
+                                                </td> 
+                                                <td>
+                                                    <input type="number" class="form-control"  id="quoted_total_price" disabled  data-totalpriceid="<?php echo $quote_prod['QuotationProduct']['id']; ?>" value="<?php echo $quote_prod['QuotationProduct']['total_price'] ?>">
+                                                </td>  
+                                                <td><button class="btn btn-danger btn-xs deleteProduct" data-id="<?php echo $quote_prod['QuotationProduct']['id'] ?>">x</button></td>
                                             </tr>
-                                        <?php } ?>
+                                        <?php 
+                                        $ctr++;
+                                            
+                                        }
+                                        ?>
+                                        
+                                        <tr>
+                                            <th colspan="4" align="right"> </th> 
+                                            <th align="right">Sub Total</th> 
+                                            <th> 
+                                                <input type="number" class="form-control"  id="subtotal" disabled  value="<?php echo $quote_data['Quotation']['sub_total'] ?>">
+                                            </th>
+                                            <th></th>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <th colspan="4" align="right"> </th> 
+                                            <th align="right">Discount</th> 
+                                            <th> <input type="number" class="form-control"  id="discount"  value="<?php echo $quote_data['Quotation']['discount'] ?>"> </th>
+                                            <th></th>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <th colspan="4" align="right"> </th> 
+                                            <th align="right">Delivery</th> 
+                                            <th> <input type="number" class="form-control"  id="delivery_amount"  value="<?php echo $quote_data['Quotation']['delivery_amount'] ?>"> </th>
+                                            <th></th>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <th colspan="4" align="right"> </th> 
+                                            <th align="right">Installation</th> 
+                                            <th> <input type="number" class="form-control"  id="installation_amount"  value="<?php echo $quote_data['Quotation']['installation_amount'] ?>"> </th>
+                                            <th></th>
+                                        </tr>
+                                          
+                                        <tr>
+                                            <th colspan="4" align="right"> </th> 
+                                            <th>Grand Total</th> 
+                                            <th> <input type="number" class="form-control" disabled id="grand_total"  value="<?php echo $quote_data['Quotation']['grand_total'] ?>"> </th>
+                                            <th></th>
+                                        </tr> 
                                     </table>
                                 </div>
                                 <?php
@@ -146,6 +199,25 @@
             </div>
         </div>
         <!-- end row -->
+        
+        
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card-box"> 
+                    <div class="row"> 
+                        <div class="col-lg-12">
+                            <h4 class="header-title m-t-0 m-b-30">
+                                Terms and Conditions 
+                            </h4> 
+                            
+                            
+                                <textarea id="terms" class="form-control"><?php echo $quote_data['Quotation']['terms'];?></textarea>
+                            </div> 
+                            </div>
+                            </div>
+                            </div>
+                            </div>
 
 
 
@@ -200,7 +272,7 @@
 
 
         <!-- START MODAL FOR ADD PRODUCT--> 
-        <div class="modal fade" id="addQuotationproductModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel1">
+        <div class="modal fade" id="addQuotationproductModal"  role="dialog" aria-labelledby="exampleModalLabel1">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -262,24 +334,67 @@
 
         <!-- END MODAL FOR ADD PRODUCT-->
 
+        <!-- START MODAL FOR update PRODUCT--> 
+        <div class="modal fade" id="update_desc_modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel1">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="exampleModalLabel1">Update Product Description</h4>
+                    </div>  
+                    <div class="modal-body">   
+                        <div class="col-lg-12">
+                            
+                            <div class="form-group">
+                                <label>Description</label>
+                                <input type="hidden" id="desc_qp_id"/>
+                                <textarea id="udescription" class="form-control"></textarea>
+                            </div>
+                        </div> 
+                    </div>
+                    <div class="modal-footer">
+                        <div class="col-lg-12">
+                            <button type="button" class="btn btn-default waves-effect" data-dismiss="modal">Close</button> 
+                            <button type="button" class="btn btn-primary" id="update_descBtn"  >Update</button>    
+                        </div>  
+                    </div>  
+
+                </div> 
+            </div>
+        </div>
+
+        <!-- END MODAL FOR ADD PRODUCT-->
+
 
     </div>
 </div>
 
 <script>
 
+// tinymce.init({
+//     selector: ".quoted_description",
+//     setup: function (ed) {
+//         ed.on("change", function () {
+//             TinyMceGetStatsLost(ed);
+//         })
+//     }
+// });
+// function TinyMceGetStatsLost(inst) {
+//     alert("The HTML is now:" + inst.getBody().innerHTML);           
+// }
+     
     tinymce.init({
         selector: 'textarea',
-        height: 500,
+        height: 100, 
         menubar: false,
-        plugins: [
-            'autolink',
-            'link',
-            'codesample',
-            'lists',
-            'searchreplace visualblocks',
-            'table contextmenu paste code'
-        ],
+        // plugins: [
+        //     // 'autolink',
+        //     // 'link',
+        //     // 'codesample',
+        //     // 'lists',
+        //     // 'searchreplace visualblocks',
+        //     // 'table contextmenu paste code'
+        // ],
         toolbar: 'undo redo | insert | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | codesample | link',
     });
 </script>
@@ -363,7 +478,21 @@
             placeholder: "Select Client Name",
             allowClear: true
         }); 
+        
+        $("#product_id").select2({
+            allowClear: true,
+            width: "100%",
+        });
+        
+        $("#company_id").select2({
+           allowClear: true,
+           width: "100%"
+        });
     });//end document data
+
+
+
+
 
 
 
@@ -374,6 +503,7 @@
             data: {'data': data},
             dataType: 'json',
             success: function (dd) {
+                // console.log(dd);
                 location.reload();
             },
             error: function (dd) {
@@ -424,27 +554,69 @@
         }
         saveProcess(data);
     });
-
-
-
-    function saveSubject() {
-        var subject = $("#subject").val();
+    
+    
+    $('#subject').on('change', function (e) {
+        var value = $("#subject").val();
         var id = $("#quotation_id").val();
         var Qfield = 'subject';
 
         var data = {"id": id,
-            "value": subject,
+            "value": value,
             "Qfield": Qfield
         }
-
         saveProcess(data);
-    }
+    });
+    
+    $('#shipping_address').on('change', function (e) {
+        var value = $("#shipping_address").val();
+        var id = $("#quotation_id").val();
+        var Qfield = 'shipping_address';
+
+        var data = {"id": id,
+            "value": value,
+            "Qfield": Qfield
+        }
+        saveProcess(data);
+    });
+    
+    $('#billing_address').on('change', function (e) {
+        var value = $("#billing_address").val();
+        var id = $("#quotation_id").val();
+        var Qfield = 'billing_address';
+
+        var data = {"id": id,
+            "value": value,
+            "Qfield": Qfield
+        }
+        saveProcess(data);
+    });
+
+
+
+    // function saveSubject() {
+    //     var subject = $("#subject").val();
+    //     var id = $("#quotation_id").val();
+    //     var Qfield = 'subject';
+
+    //     var data = {"id": id,
+    //         "value": subject,
+    //         "Qfield": Qfield
+    //     }
+
+    //     saveProcess(data);
+    // }
 //    );
 
 
 //// On change product ///
 
     $("#product_id").change(function () {
+        
+            $('#list_price').val();
+            $('#sale_price').val();
+            $('#description').val();
+            $('.addedProductImageDiv').remove();
         var product_id = $('#product_id').val();
         //get details of selected product  
          
@@ -454,10 +626,13 @@
             console.log(data);
             $('#list_price').val(data['price']);
             $('#sale_price').val(data['sale_price']);
-            $('#description').val(data['description']); 
+            // var description = $('#').val(data['description']); 
+            // tinyMCE.activeEditor.setContent();
+            
+            tinymce.get('description').setContent(data['description']);
             
             $("#productImageDiv").append('<div class="form-group addedProductImageDiv">' +
-                    '<img class="img-responsive" src="../product_uploads/' + data['image'] + '"> </div>' + 
+                    '<img class="img-responsive" src="../product_uploads/' + data['image'] + '" width="70%"> </div>' + 
                     '</div>');
         });  
     });
@@ -471,7 +646,12 @@
     var qty = $('#qty').val();
     var list_price = $('#list_price').val();
     var sale_price = $('#sale_price').val();
-    var description = $('#description').val();
+    // var description = $('#description').val();
+    var quotation_id = $('#quotation_id').val();
+    
+    
+    var description = tinyMCE.get('description').getContent();
+    console.log('=>'+description)
     var data = {
         "product_id": product_id,
         "qty": qty,
@@ -479,44 +659,265 @@
         "sale_price": sale_price,
         "description": description,
         "quotation_id": quotation_id
+    } 
+    
+    if(list_price!=""){
+        if(qty!=""){
+            if(sale_price!=""){
+                $.ajax({
+                    url: "/quotations/saveProductQuotation",
+                    type: 'POST',
+                    data: {'data': data},
+                    dataType: 'json',
+                    success: function (dd) {
+                        location.reload();
+                    },
+                    error: function (dd) {
+                        console.log(dd);
+                    }
+                });
+            }else{
+                document.getElementById('sale_price').style.borderColor = "red";
+            }
+        }else{
+            document.getElementById('qty').style.borderColor = "red";
+        }
+    }else{
+        document.getElementById('list_price').style.borderColor = "red";
+    }
+    });
+    
+    
+    
+    
+    
+    $(".deleteProduct").each(function(index) {
+        $(this).on("click", function(){ 
+            var id = $(this).data('id');  
+            var quotation_id = $('#quotation_id').val();
+            //   console.log('sdfsdf'+id);
+    var data = {
+        "quotation_product_id": id, 
+        "quotation_id": quotation_id
+    } 
+         swal({
+                title: "Are you sure?",
+                text: "Your will not be able to recover this product.",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonClass: "btn-danger",
+                confirmButtonText: "Yes",
+                cancelButtonText: "No",
+                closeOnConfirm: false,
+                closeOnCancel: false
+            },
+            function (isConfirm) {
+                if (isConfirm) {  
+                    $.ajax({
+                    url: "/quotations/delete_product",
+                    type: 'POST',
+                    data: {'data': data},
+                    dataType: 'text',
+                    success: function (dd) {
+                        location.reload();
+                    },
+                    error: function (dd) { 
+                        console.log("AJAX error: " + JSON.stringify(dd, null, 2));
+                    }
+                });
+                
+                
+                } else {
+                    swal("Cancelled", "", "error");
+                }
+            });
+            
+            
+        });
+   });
+    
+    
+     
+
+    function saveQuotaionProductProcess(data) {
+        $.ajax({
+            url: "/quotation_products/saveQuotationProduct",
+            type: 'POST',
+            data: {'data': data},
+            dataType: 'json',
+            success: function (dd) {
+                location.reload();
+            },
+            error: function (dd) {
+                console.log(dd);
+            }
+        });
     }
     
     
-    $.ajax({
-        url: "/quotations/saveProductQuotation",
-        type: 'POST',
-        data: {'data': data},
-        dataType: 'json',
-        success: function (dd) {
-            location.reload();
-        },
-        error: function (dd) {
-            console.log(dd);
+    
+    $(".update_desc").each(function(index) {
+        $(this).on("click", function(){    
+            // alert('asdasd');
+            var descid = $(this).data('descid');  
+            var descdata = $(this).data('descdata');  
+            $('#desc_qp_id').val(descid);
+            tinymce.get('udescription').setContent(descdata); 
+            $('#update_desc_modal').modal('show');   
+        });
+    });
+    
+    
+        $("#update_descBtn").on("click", function(){  
+        var quotation_product_id = $('#desc_qp_id').val();
+        
+        var value = tinyMCE.get('udescription').getContent(); 
+        var Qfield = 'description';
+        
+
+        var data = {
+            "quotation_product_id": quotation_product_id,
+            "value": value,
+            "Qfield": Qfield
         }
-    });
-//    console.log(data);
-//        $.ajax({
-//            url: "/quotation_products/saveProductQuotation",
-//            type: 'POST',
-//            data: {'data': data},
-//            dataType: 'json',
-//            success: function (dd) {
-//                location.reload();
-//            },
-//            error: function (dd) {
-//                console.log(dd);
-//            }
-//        });
+        
+        saveQuotaionProductProcess(data);
     });
     
     
     
     
+    $(".quoted_qty").each(function(index) {
+        $(this).on("change", function(){  
+            
+                var quotation_product_id = $(this).data('qtyid');  
+                var value = parseFloat($(this).val());
+                var Qfield = 'qty';
+                
+            if (value % 1 == 0) {
+                // alert('int');
+                
+        
+                var data = {
+                    "quotation_product_id": quotation_product_id,
+                    "value": value,
+                    "Qfield": Qfield
+                }
+                
+                saveQuotaionProductProcess(data);
+                
+            }else{
+                alert('Invalid Quantity!');
+            }
+    }); 
+    });
+    $(".quoted_list_price").each(function(index) {
+        $(this).on("change", function(){   
+         
+        var quotation_product_id = $(this).data('listpriceid');  
+        var value = parseFloat($(this).val());
+        var Qfield = 'list_price';
+        
+
+        var data = {
+            "quotation_product_id": quotation_product_id,
+            "value": value,
+            "Qfield": Qfield
+        }
+        
+        saveQuotaionProductProcess(data);
+    });
+    });
     
     
-     
+    function saveComputeQuotationProcess(data) {
+        $.ajax({
+            url: "/quotations/saveComputeQuotationProcess",
+            type: 'POST',
+            data: {'data': data},
+            dataType: 'json',
+            success: function (dd) {
+                location.reload();
+            },
+            error: function (dd) {
+                console.log(dd);
+            }
+        });
+    }
+    
+        $("#discount").on("change", function(){   
+         
+        var quotation_id = $("#quotation_id").val();  
+        var value = $("#discount").val();
+        var Qfield = 'discount';
+        
+
+        var data = {
+            "quotation_id": quotation_id,
+            "value": value,
+            "Qfield": Qfield
+        }
+        
+        saveComputeQuotationProcess(data);
+    });
+    
+        $("#delivery_amount").on("change", function(){   
+         
+        var quotation_id = $("#quotation_id").val();  
+        var value = $("#delivery_amount").val();
+        var Qfield = 'delivery_amount';
+        
+
+        var data = {
+            "quotation_id": quotation_id,
+            "value": value,
+            "Qfield": Qfield
+        }
+        
+        saveComputeQuotationProcess(data);
+    });
+    
+        $("#installation_amount").on("change", function(){   
+         
+        var quotation_id = $("#quotation_id").val();  
+        var value = $("#installation_amount").val();
+        var Qfield = 'installation_amount';
+        
+
+        var data = {
+            "quotation_id": quotation_id,
+            "value": value,
+            "Qfield": Qfield
+        }
+        
+        saveComputeQuotationProcess(data);
+    });
     
     
-     
+    
+    
+    
+    
+    
+        $('.savePendingQuote').each(function (index) {
+            $(this).click(function () {
+                var button_type = $(this).data("buttontype");
+                var terms = tinyMCE.get('terms').getContent();
+ 
+                var id = $("#quotation_id").val();  
+                    var Qfield = 'terms';
+                    var shipping_address = $('#shipping_address').val();
+                    var billing_address = $('#billing_address').val();
+            
+                    var data = {"id": id,
+                        "value": terms,
+                        "Qfield": Qfield,
+                        "shipping_address": shipping_address,
+                        "billing_address": billing_address,
+                    }
+            
+                    saveProcess(data);
+            });
+        });
 
 </script>

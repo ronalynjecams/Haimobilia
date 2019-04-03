@@ -169,4 +169,21 @@ class Quotation extends AppModel {
 			'order' => ''
 		)
 	);
+	
+	
+	public $hasMany = array(
+		'Collection' => array(
+			'className' => 'Collection',
+			'foreignKey' => 'quotation_id',
+			'dependent' => false,
+			'conditions' => '',
+			'fields' => '',
+			'order' => '',
+			'limit' => '',
+			'offset' => '',
+			'exclusive' => '',
+			'finderQuery' => '',
+			'counterQuery' => ''
+		)
+	);
 }

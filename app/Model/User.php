@@ -6,6 +6,8 @@ App::uses('BlowfishPasswordHasher', 'Controller/Component/Auth');
  *
  */
 class User extends AppModel {
+	
+	
 
 	public function beforeSave($options = array()) {
 	    if (isset($this->data[$this->alias]['password'])) {
@@ -16,4 +18,35 @@ class User extends AppModel {
 	    }
 	    return true;
 	}
+	
+	
+	public $hasMany = array(
+		// 'Quotation' => array(
+		// 	'className' => 'Quotation',
+		// 	'foreignKey' => 'quotation_id',
+		// 	'dependent' => false,
+		// 	'conditions' => '',
+		// 	'fields' => '',
+		// 	'order' => '',
+		// 	'limit' => '',
+		// 	'offset' => '',
+		// 	'exclusive' => '',
+		// 	'finderQuery' => '',
+		// 	'counterQuery' => ''
+		// ),
+		// 'Company' => array(
+		// 	'className' => 'Company',
+		// 	'foreignKey' => 'company_id',
+		// 	'dependent' => false,
+		// 	'conditions' => '',
+		// 	'fields' => '',
+		// 	'order' => '',
+		// 	'limit' => '',
+		// 	'offset' => '',
+		// 	'exclusive' => '',
+		// 	'finderQuery' => '',
+		// 	'counterQuery' => ''
+		// ), 
+	);
+	
 }

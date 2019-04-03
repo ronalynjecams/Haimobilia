@@ -40,6 +40,6 @@ if (!defined('CAKE_CORE_INCLUDE_PATH')) {
 
 require APP_DIR . DS . WEBROOT_DIR . DS . 'index.php';
 
-//₱
+//₱ = &#8369;
 //ñ
 // onkeypress="return (event.charCode == 8 || event.charCode == 0) ? null : event.charCode >= 48 && event.charCode <= 57"

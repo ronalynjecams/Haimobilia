@@ -23,20 +23,20 @@
 	<div class="container">
 		<div class="row bg-title">
 			<div class="col-lg-3 col-md-4 col-sm-4 col-xs-12">
-				<h4 class="page-title">Create Delivery Receipts</h4>
+				<h4 class="page-title">Quotation List</h4>
 			</div>
 		</div>
 		
 		<div class="row">
 			<div class="col-sm-12">
-				<div class="card-box">
-                    <div class="table-responsive">
+				<div class="card-box"> 
+                    <div class="table-responsive"> 
                         <table id="datatable" class="table table-striped dt-responsive nowrap">
 				            <thead>
 				                <tr>
 				                	<th>Date Created</th>
-				                	<th>Company name</th>
-				                	<?php if($role != "sales_executive") { ?>
+				                	<th>Company name [Quotation #]</th>
+				                	<?php if($userRole != "sales_executive") { ?>
 				                	<th>Sales Executive</th>
 				                	<?php } ?>
 				                	<th>Contract Amount</th>
@@ -72,17 +72,31 @@
 					                		$sales_exe_name = "No Sales Executive.";
 				                		}
 				                	}
-				                	$contract_amnt = "₱ ".number_format((float)$quote['grand_total'],2,'.',',');
+				                	$contract_amnt = number_format((float)$quote['grand_total'],2,'.',',');
+				                	
+				                	$paid_amount = 0.000000;
+				                	$ewt_amount = 0.000000;
+				                	$other_amount = 0.000000;
+				                	$col_obj = $cols_obj[$quote_id];
+				                	foreach($col_obj as $cols) {
+				                		$col = $cols['Collection'];
+					                	$paid_amount += $col['paid_amount'];
+					                	$ewt_amount += $col['ewt_amount'];
+					                	$other_amount += $col['other_amount'];
+				                	}
+				                	$total_tmp = $paid_amount + $ewt_amount + $other_amount;
+				                	$total = number_format((float)$total_tmp,2,'.',',');
 				                	?>
 				                	<tr>
 				                		<td><?php echo $quote_created; ?></td>
-				                		<td><?php echo $company_name; ?></td>
-				                		<?php if($role != "sales_executive") {
+				                		<td><?php echo $company_name.'  <small>['.$quote['quote_number'].']</small>'; ?></td>
+				                		<?php if($userRole != "sales_executive") {
 				                			echo '<td>'.$sales_exe_name.'</td>';
 				                		} ?>
-				                		<td><?php echo $contract_amnt; ?></td>
-				                		<td>--- UNDER CONSTRUCTION ---</td>
+				                		<td align="right">	&#8369; <?php echo $contract_amnt; ?></td>
+				                		<td align="right">	&#8369; <?php echo $total; ?></td>
 				                		<td>
+				                			<a href="/collections/view?id=<?php echo $quote_id; ?>">
 				                			<button class="btn btn-info"
 				                					id="btn_view"
 				                					data-toggle="tooltip"
@@ -90,6 +104,97 @@
 				                					title="View Quotation">
 				                				<span class="fa fa-eye"></span>
 				                			</button>
+				                			</a>
+				                			
+				                			<?php
+				                			
+				                // 			if($userRole == 'sales_executive' || $userRole == 'sales_manager') {
+				                				echo '
+				                					<a href="/pdfs/print_quote?id='.$quote_id.'">
+				                					<button class="btn btn-default"
+				                							data-toggle="tooltip"
+				                							data-placement="top"
+				                							title="Print Quotation">
+				                						<span class="fa fa-file-pdf-o text-danger">
+				                						</span>
+				                					</button>
+				                					</a>
+				                				';
+				                // 			}
+				                			
+				                			if($userRole == "sales_executive") {
+				                				if($status == "pending") {
+				                					echo '
+				                					<a href="/quotations/update?id='.$quote_id.'" class="btn btn-warning"
+				                							 data-toggle="tooltip"
+				                							 data-placement="top"
+				                							 title="Update"   >
+				                						<span class="fa fa-edit">
+				                						</span>
+				                					</a>
+				                					<button class="btn btn-primary"
+				                							 data-toggle="tooltip"
+				                							 data-placement="top"
+				                							 title="Move"
+				                							 id="btn_move"
+				                							 data-action="moved"
+				                							 value="'.$quote_id.'">
+				                						<span class="fa fa-truck">
+				                						</span>
+				                					</button>
+				                					';
+				                				}
+				                			}
+				                			
+				                			if($userRole == 'sales_manager'
+				                			|| $userRole == 'admin') {
+				                				if($status=="moved") {
+					                				echo '
+					                					<button class="btn btn-success"
+					                							 data-toggle="tooltip"
+					                							 data-placement="top"
+					                							 title="Approve"
+					                							 id="btn_approve"
+					                							 data-action="approved"
+					                							 value="'.$quote_id.'">
+					                						<span class="fa fa-check">
+					                						</span>
+					                					</button>
+					                				';
+				                				}
+				                			}
+				                			
+				                // 			if($userRole == 'sales_manager') {
+				                				if($status == 'approved') {
+				                					echo '
+					                					<button class="btn btn-danger"
+					                							 data-toggle="tooltip"
+					                							 data-placement="top"
+					                							 title="Process"
+					                							 id="btn_process"
+					                							 data-action="processed"
+					                							 value="'.$quote_id.'">
+					                						<span class="fa fa-refresh">
+					                						</span>
+					                					</button>
+					                				';
+				                				}
+				                // 			}
+				                			
+				                			if($userRole != 'sales_executive'){
+				                					echo '
+				                					<a href="/pdfs/print_jo?id='.$quote_id.'" target="_blank">
+				                					<button class="btn btn-default"
+				                							data-toggle="tooltip"
+				                							data-placement="top"
+				                							title="Print Job Order">
+				                						<span class="fa fa-file-zip-o text-danger">
+				                						</span>
+				                					</button>
+				                					</a>
+				                				';
+				                			}
+				                			?>
 				                		</td>
 				                	</tr>
 				                	<?php
@@ -114,6 +219,76 @@
         $('#datatable-responsive').DataTable();
         $('#datatable-scroller').DataTable({ajax: "assets/plugins/datatables/json/scroller-demo.json", deferRender: true, scrollY: 380, scrollCollapse: true, scroller: true});
         var table = $('#datatable-fixed-header').DataTable({fixedHeader: true});
+        
+        // "button#btn_approve, button#btn_move, button#btn_process"
+        $(document).on('click', function(e) {
+        	var target = $(e.target);
+        	var button_span = $(e.target).prop('id');
+        	var action = "";
+        	var isOkay = false;
+        	if(button_span!="") {
+        		var quote_id = target.val();
+	        	action = target.data('action');
+	        	var data = {"id":quote_id, "action":action};
+	        	isOkay = true;
+        	}
+        	else {
+        		var span = target.prop('nodeName');
+        		if(span == "SPAN") {
+        			var button = target.closest('button');
+        			var quote_id = button.val();
+		        	action = button.data('action');
+		        	var data = {"id":quote_id, "action":action};
+		        	isOkay = true;
+        		}
+        		else {
+        			isOkay = false;
+        		}
+        	}
+			
+			if(isOkay) {
+	          	swal({
+		            title: "Are you sure?",
+		            text: "This quotation will be "+action+".",
+		            type: "warning",
+		            showCancelButton: true,
+		            confirmButtonClass: "btn-danger",
+		            confirmButtonText: "Yes",
+		            cancelButtonText: "No",
+		            closeOnConfirm: false,
+		            closeOnCancel: true
+		        },
+		        function (isConfirm) {
+		            if (isConfirm) {
+				        $.ajax({
+		        			url: '/quotations/action',
+			        		type: 'POST',
+			        		data: {"data": data},
+			        		dataType: 'text',
+			        		success: function(msg) {
+			        			console.log(msg);
+			        			swal({
+						            title: "Success!",
+						            text: "Quotation was "+action+".",
+						            type: "success"
+						        },
+						        function (isConfirm) {
+						            if (isConfirm) { location.reload(); }
+						        });
+			        		},
+			        		error: function(error) {
+			        			console.log("Error: "+error);
+			        			swal({
+						            title: "Oops!",
+						            text: "Something went wrong while quotation was being "+action+". Please try again.",
+						            type: "warning"
+						        });
+			        		}
+			        	});	
+		            }
+		        });
+			}
+        });
     });
     TableManageButtons.init();
 </script>

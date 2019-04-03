@@ -34,7 +34,19 @@
 					<?php echo $this->Form->input('password', array('class' => 'form-control', 'placeholder' => 'Password'));?>
 				</div>
 				<div class="form-group">
-					<?php echo $this->Form->input('role', array('class' => 'form-control', 'placeholder' => 'Role','options' => array('admin' => 'admin')));?>
+					<?php echo $this->Form->input('role', array('class' => 'form-control', 'placeholder' => 'Role','options' => array('sales_executive' => 'sales_executive', 'admin' => 'admin','sales_manager' => 'sales_manager')));?>
+				</div>
+				<div class="form-group">
+					<?php echo $this->Form->input('position', array('class' => 'form-control', 'placeholder' => 'Position'));?>
+				</div>
+				<div class="form-group">
+					<?php echo $this->Form->input('quota', array('class' => 'form-control', 'placeholder' => 'Quota'));?>
+				</div>
+				<div class="form-group">
+					<?php echo $this->Form->input('date_employed', array('class' => 'form-control', 'placeholder' => 'Date Employed'));?>
+				</div>
+				<div class="form-group">
+					<?php echo $this->Form->input('fullname', array('class' => 'form-control', 'placeholder' => 'Full Name'));?>
 				</div>
 				<div class="form-group">
 					<?php echo $this->Form->submit(__('Submit'), array('class' => 'btn btn-default')); ?>

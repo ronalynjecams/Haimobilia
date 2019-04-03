@@ -23,13 +23,15 @@
 	<div class="container">
 		<div class="row bg-title">
 			<div class="col-lg-3 col-md-4 col-sm-4 col-xs-12">
-				<h4 class="page-title">Create Delivery Receipts</h4>
+				<h4 class="page-title">Collection List</h4>
 			</div>
 		</div>
 		
 		<div class="row">
 			<div class="col-sm-12">
 				<div class="card-box">
+					<?php
+					if($undefined=="") { ?>
                     <div class="table-responsive">
                         <table id="datatable" class="table table-striped dt-responsive nowrap">
 				            <thead>
@@ -42,53 +44,66 @@
 				                </tr>
 				            </thead>
 				            <tbody>
-				                <?php
-				                // foreach($collections as $collection_obj) {
-				                //     $collection = $collection_obj['Quotation'];
-				                //     $id = $collection['id'];
-				                //     $date = date("F d, Y", strtotime($collection['created']));
-				                //     $client = $collection_obj['Company'];
-				                //     $client_name_tmp = ucwords($client['name']);
-				                //     if($client_name_tmp!="") {
-				                //         $client_name = $client_name_tmp;
-				                //     }
-				                //     else {
-				                //         $client_name = "No Client.";
-				                //     }
-				                //     $contract_amount = "₱ ".number_format((float)$collection['grand_total'],2,'.',',');
-				                //     $balance = "₱ ".number_format((float)$collection['balance'],2,'.',',');
-				                    
-				                //     echo '
-				                //         <tr>
-				                //             <td>'.$date.'</td>
-				                //             <td>'.$client_name.'</td>
-				                //             <td>'.$contract_amount.'</td>
-				                //             <td>'.$balance.'</td>
-				                //             <td>
-				                //                 <button class="btn btn_info"
-				                //                         id="btn_view"
-				                //                         value="'.$id.'"
-				                //                         data-toggle="tooltip"
-				                //                         data-placement="top"
-				                //                         title="View Collection">
-				                //                     <span class="fa fa-eye"></span>
-				                //                 </button>
-				                //                 <button class="btn btn_mint"
-				                //                         id="btn_update_collection"
-				                //                         value="'.$id.'"
-				                //                         data-toggle="tooltip"
-				                //                         data-placement="top"
-				                //                         title="Update Collection">
-				                //                     <span class="fa fa-money"></span>
-				                //                 </button>
-				                //             </td>
-				                //         </tr>
-				                //     ';
-				                // }
-				                ?>
+				            	<?php
+				            	foreach($cols as $col_obj) {
+				            		$col = $col_obj['Collection'];
+				            		$quote = $col_obj['Quotation'];
+				            		$quote_id = $col['quotation_id'];
+				            		
+				            		$col_id = $col['id'];
+				            		if($col['created']!=null) {
+					            		$date = date("F d, Y", strtotime($col['created']));
+				            		}
+				            		else {
+				            			$date = "No Date Specified.";
+				            		}
+				            		
+				            		foreach($clients[$quote_id] as $client_obj) {
+				            			$client_name_tmp = ucwords($client_obj['name']);
+				            			if($client_name_tmp!="") {
+				            				$client_name = $client_name_tmp;
+				            			}
+				            			else {
+				            				$client_name = "No Client Specified.";
+				            			}
+				            		}
+				            		
+				            		$contract_amount = "₱ ".number_format((float)$quote['grand_total'],2,'.',',');
+				            		$balance = "₱ ".number_format((float)$col['balance'],2,'.',',');
+				            		
+				            		echo '
+				            			<tr>
+				            				<td>'.$date.'</td>
+				            				<td>'.$client_name.'</td>
+				            				<td>'.$contract_amount.'</td>
+				            				<td>'.$balance.'</td>
+				            				<td>
+				            					<a href="/collections/view?id='.$quote_id.'">
+					            					<button class="btn btn-info"
+					            							data-toggle="tooltip"
+					            							data-placement="top"
+					            							title="View Collection">
+					            						<span class="fa fa-eye"></span>
+					            					</button>
+				            					</a>
+				            					<a href="/collections/update?id='.$quote_id.'" class="btn btn-success"
+				            							data-toggle="tooltip"
+				            							data-placement="top"
+				            							title="Update Collection"
+				            							id="btn_update" >
+				            						<span class="fa fa-money"></span>
+				            					</a>
+			            					</td>
+				            			</tr>';
+				            	}
+				            	?>
 				            </tbody>
 				        </table>
 				    </div>
+				    <?php }
+				    else {
+				    	echo '<font style="color:red;font-weight:bold;">'.$undefined.'</font>';
+				    }?>
 				</div>
 			</div>
 		</div>

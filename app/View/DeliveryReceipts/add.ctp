@@ -1,6 +1,6 @@
-<!--SWEET ALERT-->
-<link href="../css/sweetalert.css" rel="stylesheet">
-<script src="../js/sweetalert.min.js"></script>
+<!--IMPORT SELECT 2-->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
 
 <div class="content">
 	<div class="container">
@@ -43,6 +43,7 @@
 									<option>--- Select Type ---</option>
 									<option value="transportify">Transportify</option>
 									<option value="jecams">Jecams</option>
+									<option value="pickup">Pickup</option>
 								</select>
 							</div>
 						</div>
@@ -79,6 +80,10 @@
 <!--JAVASCRIPT FUNCTIONS-->
 <script>
 $(document).ready(function() {
+	$("#select_quotation").select2({
+		allowClear: true
+	});
+
 	$("#btn_add").on('click', function() {
 		var quotation = $("#select_quotation");
 		var dr_number = $("#input_dr_number");

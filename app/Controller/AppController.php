@@ -60,6 +60,7 @@ class AppController extends Controller {
         $this->set('authUser', $this->Auth->user());
         $this->set('userID', $this->Auth->user('id'));
         $this->set('userRole', $this->Auth->user('role'));
+        $this->set('userName', $this->Auth->user('fullname'));
         
         $myrole = $this->Auth->user('role');
         
@@ -68,8 +69,6 @@ class AppController extends Controller {
         $me = $this->Auth->user('id');
 
         $this->set(compact('me'));
-        
-        
     }
 
 }
